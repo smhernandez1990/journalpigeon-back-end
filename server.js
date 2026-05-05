@@ -19,10 +19,11 @@ app.use(logger('dev'));
 
 // Routes
 app.use('/auth', authController)
-app.use(verifyJwt) //auth check
 app.use('/users', usersController)
 app.use('/posts', postsController)
 app.use('/comments', commentsController)
+
+app.get("/favicon.ico", (req, res) => res.status(204));
 
 app.listen(3000, () => {
     console.log('The express app is ready!');

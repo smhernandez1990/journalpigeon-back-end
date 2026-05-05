@@ -1,13 +1,17 @@
 const router = require('express').Router()
 const Post = require('../models/post')
+const Comment = require("../models/comment");
 const verifyJwt = require('../middleware/verify-jwt')
 
 //Create
 router.post('/', verifyJwt, async (req, res) => {
     try {
-        req.user._id === req.body.author
+
+        req.body.author = req.user._id;
+        req.body.user_id = req.user._id;
+
         const post = await Post.create(req.body)
-        post._doc.author = req.user
+        await post.populate('author');
         res.status(201).json(post)
     } catch (error) {
         res.status(500).json({error: error.message})
@@ -29,7 +33,9 @@ router.get('/', verifyJwt, async (req, res) => {
 //Show
 router.get('/:postId', verifyJwt, async (req, res) => {
     try {
-        const post = await Post.findById(req.params.postId).populate('author')
+        const post = await Post.findById(req.params.postId)
+        .populate('author')
+        .populate('comments')
         res.status(200).json(post)
     } catch (error) {
         res.status(500).json({ error: error.message })
@@ -37,18 +43,37 @@ router.get('/:postId', verifyJwt, async (req, res) => {
 })
 
 //Update
-router.put('/:postId', verifyJwt, async (req, res) => {
-    try {
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message })
-    }
-})
+router.put("/:postId", verifyJwt, async (req, res) => {
+  try {
+    const updatePost = await Post.findOneAndUpdate(
+      { _id: req.params.postId, user_id: req.user._id },
+      req.body,
+      { new: true, runValidators: true },
+    );
+
+    if (!updatePost)
+      return res.status(404).json({ error: "Unauthorized or not found" });
+
+    res.status(200).json(updatePost);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 //Delete
 router.delete('/:postId', verifyJwt, async (req, res) => {
     try {
+        const deletePost = await Post.findOneAndDelete({
+          _id: req.params.postId,
+          user_id: req.user._id,
+        });
+
+        if (!deletePost)
+          return res.status(404).json({ error: "Unauthorized or not found" });
         
+        await Comment.deleteMany({ post_id: req.params.postId });
+
+        res.status(204).send();
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
@@ -57,7 +82,20 @@ router.delete('/:postId', verifyJwt, async (req, res) => {
 //Create Comment
 router.post('/:postId/comments', verifyJwt, async (req, res) => {
     try {
-        
+        const newComment = await Comment.create({
+          ...req.body,
+          post_id: req.params.postId,
+          author: req.user._id,
+          user_id: req.user._id
+        });
+
+        await Post.findByIdAndUpdate(
+          req.params.postId,
+          { $push: { comments: newComment._id } },
+          );
+
+        await newComment.populate("author");
+        res.status(201).json(newComment);
     } catch (error) {
         res.status(500).json({ error: error.message })
     }
