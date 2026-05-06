@@ -7,29 +7,47 @@ const jwt = require('jsonwebtoken')
 router.post('/sign-in', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username })
-        if (!user) throw new Error(`Username ${req.body.username} does not exist`)
-        const isValidPW = bcrypt.compareSync(req.body.password, user.hashedPassword)
-        if (!isValidPW) throw new Error('Invalid Credentials')
-        const token = jwt.sign({ user: user }, process.env.SECRET_KEY)
+         if (
+           !user ||
+           !bcrypt.compareSync(req.body.password, user.hashedPassword)
+         ) {
+           return res.status(401).json({ err: "Invalid Credentials" });
+         }
+
+        const token = jwt.sign(
+            { user: { _id: user._id, username: user.username } }, 
+            process.env.SECRET_KEY
+        )
         res.status(200).json({ token })
     } catch (error) {
-        res.json({err: error.message})
+        res.status(500).json({err: error.message})
     }
 })
     
 
 router.post('/sign-up', async (req, res) => {
     try {
-        const foundUserInDB = await User.findOne({ username: req.body.username })
-        if(foundUserInDB) throw new Error (`Username ${req.body.username} already exists`)
+        const foundUser = await User.findOne({
+          username: req.body.username,
+        });
+        if (foundUser) {
+          return res
+            .status(400)
+            .json({ err: `Username ${req.body.username} already exists` });
+        }
+
         const user = await User.create({
-            ...req.body,
-            hashedPassword: bcrypt.hashSync(req.body.password, 12)
-        })
-        const token = jwt.sign({user}, process.env.SECRET_KEY)
+          ...req.body,
+          hashedPassword: bcrypt.hashSync(req.body.password, 12),
+        });
+
+        const token = jwt.sign(
+          { user: { _id: user._id, username: user.username } },
+          process.env.SECRET_KEY,
+        );
         res.status(201).json({ token })
     } catch (error) {
-        res.json({err: error.message})
+        res.status(500).json({err: error.message})
     }
 })
 

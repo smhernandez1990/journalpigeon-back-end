@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const User = require('../models/user')
+const verifyJwt = require('../middleware/verify-jwt')
 
 router.get('/', async (req, res) => {
     try {
@@ -10,7 +11,7 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.get('/me', async (req, res) => {
+router.get('/me', verifyJwt, async (req, res) => {
     try {
         const user = await User.findById(req.user._id)
         res.status(200).json({ user })
