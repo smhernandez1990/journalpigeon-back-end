@@ -6,12 +6,11 @@ const verifyJwt = require('../middleware/verify-jwt')
 //Create
 router.post('/', verifyJwt, async (req, res) => {
     try {
-
         req.body.author = req.user._id;
         req.body.user_id = req.user._id;
-
         const post = await Post.create(req.body)
-        await post.populate('author');
+        post._doc.author = req.user
+        post._doc.user_id = req.user
         res.status(201).json(post)
     } catch (error) {
         res.status(500).json({error: error.message})
