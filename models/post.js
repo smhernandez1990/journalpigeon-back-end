@@ -19,14 +19,10 @@ const postSchema = new mongoose.Schema(
         user_id: {
             type: mongoose.Schema.Types.ObjectId, ref: 'User'
         },
-        comments: {
-            type: [mongoose.Schema.Types.ObjectId], ref: 'Comment',
-            default: [],
-        },
-        tags: {
-            type: [String],
-            default: [],
-        },
+        comments: [{
+            type: mongoose.Schema.Types.ObjectId, ref: 'Comment'
+        }],
+        tags: [String],
     },
     { timestamps: true },
 )
