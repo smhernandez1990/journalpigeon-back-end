@@ -79,25 +79,29 @@ router.delete('/:postId', verifyJwt, async (req, res) => {
 })
 
 //Create Comment
-router.post('/:postId/comments', verifyJwt, async (req, res) => {
-    try {
-        const newComment = await Comment.create({
-          ...req.body,
-          post_id: req.params.postId,
-          author: req.user._id,
-          user_id: req.user._id
-        });
+router.post("/:postId/comments", verifyJwt, async (req, res) => {
+  try {
+    
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ error: "Post not found" });
 
-        await Post.findByIdAndUpdate(
-          req.params.postId,
-          { $push: { comments: newComment._id } },
-          );
+    
+    const newComment = await Comment.create({
+      ...req.body,
+      post_id: req.params.postId,
+      author: req.user._id,
+      user_id: req.user._id,
+    });
 
-        await newComment.populate("author");
-        res.status(201).json(newComment);
-    } catch (error) {
-        res.status(500).json({ error: error.message })
-    }
-})
+    
+    post.comments.push(newComment._id);
+    await post.save();
+
+    await newComment.populate("author");
+    res.status(201).json(newComment);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router
