@@ -30,16 +30,20 @@ router.get('/', verifyJwt, async (req, res) => {
 })
 
 //Show
-router.get('/:postId', verifyJwt, async (req, res) => {
-    try {
-        const post = await Post.findById(req.params.postId)
-        .populate('author')
-        .populate('comments')
-        res.status(200).json(post)
-    } catch (error) {
-        res.status(500).json({ error: error.message })
-    }
-})
+router.get("/:postId", verifyJwt, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId)
+      .populate("author")
+      .populate({
+        path: "comments",
+        populate: { path: "author" }, 
+      });
+
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 //Update
 router.put("/:postId", verifyJwt, async (req, res) => {
