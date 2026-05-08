@@ -1,73 +1,81 @@
-const router = require("express").Router({ mergeParams: true });
-const Comment = require("../models/comment");
+const router = require("express").Router();
 const Post = require("../models/post");
+const Comment = require("../models/comment");
 const verifyJwt = require("../middleware/verify-jwt");
 
-//Create Comment
+// Create Post
 router.post("/", verifyJwt, async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
-    if (!post) return res.status(404).json({ error: "Post not found" });
-
-    const newComment = await Comment.create({
-      ...req.body,
-      post_id: req.params.postId,
-      author: req.user._id,
-      user_id: req.user._id,
-    });
-
-    post.comments.push(newComment._id);
-    await post.save();
-
-    await newComment.populate("author");
-    res.status(201).json(newComment);
+    req.body.author = req.user._id;
+    req.body.user_id = req.user._id;
+    const post = await Post.create(req.body);
+    post._doc.author = req.user;
+    post._doc.user_id = req.user;
+    res.status(201).json(post);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-//Update Comment
-router.put("/:commentId", verifyJwt, async (req, res) => {
+// Index Posts
+router.get("/", verifyJwt, async (req, res) => {
   try {
-    const { body } = req.body;
-    const updatedComment = await Comment.findOneAndUpdate(
-      { _id: req.params.commentId, author: req.user._id },
-      { body },
+    const posts = await Post.find({})
+      .populate("author")
+      .sort({ createdAt: "desc" });
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Show Post
+router.get("/:postId", verifyJwt, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId)
+      .populate("author")
+      .populate({
+        path: "comments",
+        populate: { path: "author" },
+      });
+    res.status(200).json(post);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update Post
+router.put("/:postId", verifyJwt, async (req, res) => {
+  try {
+    const updatePost = await Post.findOneAndUpdate(
+      { _id: req.params.postId, user_id: req.user._id },
+      req.body,
       { new: true, runValidators: true },
     ).populate("author");
 
-    if (!updatedComment)
-      return res
-        .status(404)
-        .json({ error: "Comment not found or unauthorized" });
+    if (!updatePost)
+      return res.status(404).json({ error: "Unauthorized or not found" });
 
-    res.status(200).json(updatedComment);
+    res.status(200).json(updatePost);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-//Delete Comment 
-router.delete("/:commentId", verifyJwt, async (req, res) => {
+// Delete Post
+router.delete("/:postId", verifyJwt, async (req, res) => {
   try {
-    const comment = await Comment.findById(req.params.commentId);
-    const post = await Post.findById(req.params.postId);
+    const deletePost = await Post.findOneAndDelete({
+      _id: req.params.postId,
+      user_id: req.user._id,
+    });
 
-    if (!comment || !post) return res.status(404).json({ error: "Not found" });
+    if (!deletePost)
+      return res.status(404).json({ error: "Unauthorized or not found" });
 
-    const isCommentAuthor = comment.author.equals(req.user._id);
-    const isPostAuthor = post.author.equals(req.user._id);
+    await Comment.deleteMany({ post_id: req.params.postId });
 
-    if (isCommentAuthor || isPostAuthor) {
-      await Comment.findByIdAndDelete(req.params.commentId);
-
-      post.comments.pull(req.params.commentId);
-      await post.save();
-
-      return res.status(204).send();
-    }
-
-    res.status(401).json({ error: "Unauthorized" });
+    res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
