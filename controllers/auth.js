@@ -11,7 +11,7 @@ router.post('/sign-in', async (req, res) => {
            !user ||
            !bcrypt.compareSync(req.body.password, user.hashedPassword)
          ) {
-           return res.status(401).json({ err: "Invalid Credentials" });
+           return res.status(401).json({ error: "Invalid Credentials" });
          }
 
         const token = jwt.sign(
@@ -20,7 +20,8 @@ router.post('/sign-in', async (req, res) => {
         )
         res.status(200).json({ token })
     } catch (error) {
-        res.status(500).json({err: error.message})
+        res.status(500).json({error: error.message}).redirect('/error')
+        
     }
 })
     

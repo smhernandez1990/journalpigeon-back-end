@@ -22,7 +22,7 @@ router.post("/", verifyJwt, async (req, res) => {
     await newComment.populate("author");
     res.status(201).json(newComment);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message }).redirect('/error')
   }
 });
 
@@ -43,7 +43,7 @@ router.put("/:commentId", verifyJwt, async (req, res) => {
 
     res.status(200).json(updatedComment);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message }).redirect('/error')
   }
 });
 
@@ -69,7 +69,7 @@ router.delete("/:commentId", verifyJwt, async (req, res) => {
 
     res.status(401).json({ error: "Unauthorized" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message }).redirect('/error')
   }
 });
 
