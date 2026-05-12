@@ -11,6 +11,8 @@ router.get('/', async (req, res) => {
     }
 })
 
+
+//will be used for personalized dashboard
 router.get('/me', verifyJwt, async (req, res) => {
     try {
         const user = await User.findById(req.user._id)
