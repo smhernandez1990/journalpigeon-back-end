@@ -5,22 +5,18 @@ const verifyJwt = require('../middleware/verify-jwt')
 router.get('/', async (req, res) => {
     try {
         const users = await User.find({}, 'username')
-        res.json(users)
+        return res.json(users)
     } catch (error) {
-        res.status(500).json({ error: error.message })
-        res.redirect('/error')
+        return res.status(500).json({ error: error.message })
     }
 })
 
-
-//will be used for personalized dashboard
 router.get('/me', verifyJwt, async (req, res) => {
     try {
         const user = await User.findById(req.user._id)
-        res.status(200).json({ user })
+        return res.status(200).json({ user })
     } catch (error) {
-        res.status(500).json({ error: error.message })
-        res.redirect('/error')
+        return res.status(500).json({ error: error.message })
     }
 })
 

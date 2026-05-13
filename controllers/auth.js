@@ -18,10 +18,9 @@ router.post('/sign-in', async (req, res) => {
             { user: { _id: user._id, username: user.username } }, 
             process.env.SECRET_KEY
         )
-        res.status(200).json({ token })
+        return res.status(200).json({ token })
     } catch (error) {
-      res.status(500).json({ error: error.message })
-      res.redirect('/error') 
+      return res.status(500).json({ error: error.message })
     }
 })
     
@@ -46,10 +45,9 @@ router.post('/sign-up', async (req, res) => {
           { user: { _id: user._id, username: user.username } },
           process.env.SECRET_KEY,
         );
-        res.status(201).json({ token })
+        return res.status(201).json({ token })
     } catch (error) {
-      res.status(500).json({ error: error.message })
-      res.redirect('/error')
+      return res.status(500).json({ error: error.message })
     }
 })
 

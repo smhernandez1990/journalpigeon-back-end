@@ -11,10 +11,9 @@ router.post('/', verifyJwt, async (req, res) => {
         const post = await Post.create(req.body)
         post._doc.author = req.user
         post._doc.user_id = req.user
-        res.status(201).json(post)
+        return res.status(201).json(post)
     } catch (error) {
-      res.status(500).json({error: error.message})
-      res.redirect('/error')
+      return res.status(500).json({error: error.message})
     }
 })
 
@@ -24,10 +23,9 @@ router.get('/', verifyJwt, async (req, res) => {
         const posts = await Post.find({})
             .populate('author')
             .sort({ createdAt: 'desc' })
-        res.status(200).json(posts)
+        return res.status(200).json(posts)
     } catch (error) {
-      res.status(500).json({error: error.message})
-      res.redirect('/error')
+      return res.status(500).json({error: error.message})
     }
 })
 
@@ -41,10 +39,11 @@ router.get("/:postId", verifyJwt, async (req, res) => {
         populate: { path: "author" }, 
       });
 
-    res.status(200).json(post);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    return res.status(200).json(post);
   } catch (error) {
-    res.status(500).json({error: error.message})
-    res.redirect('/error')
+    return res.status(500).json({error: error.message})
   }
 });
 
@@ -60,10 +59,10 @@ router.put("/:postId", verifyJwt, async (req, res) => {
     if (!updatePost)
       return res.status(404).json({ error: "Unauthorized or not found" });
 
-    res.status(200).json(updatePost);
+    await updatePost.populate("author");
+    return res.status(200).json(updatePost);
   } catch (error) {
-    res.status(500).json({ error: error.message })
-    res.redirect('/error')
+    return res.status(500).json({ error: error.message })
   }
 });
 
@@ -80,10 +79,9 @@ router.delete('/:postId', verifyJwt, async (req, res) => {
         
         await Comment.deleteMany({ post_id: req.params.postId });
 
-        res.status(204).send();
+        return res.status(204).send();
     } catch (error) {
-      res.status(500).json({error: error.message})
-      res.redirect('/error')
+      return res.status(500).json({error: error.message})
     }
 })
 
