@@ -10,13 +10,11 @@ const usersController = require('./controllers/users')
 const postsController = require('./controllers/posts')
 const commentsController = require('./controllers/comments')
 const verifyJwt = require('./middleware/verify-jwt')
+const corsConfig = require('./middleware/corsConfig')
 
 require('./db/connection')
 
-app.use(cors({
-    origin:'https://journal-pigeon.netlify.app',
-    optionsSuccessStatus: 200
-}));
+app.use(cors(corsConfig));
 app.use(express.json());
 app.use(logger('dev'));
 
