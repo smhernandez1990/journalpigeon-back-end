@@ -26,5 +26,5 @@ app.use("/posts/:postId/comments", commentsController);
 app.get("/favicon.ico", (req, res) => res.status(204));
 
 app.listen(3000, () => {
-    console.log('The express app is ready!');
+    console.log('Microphone Check One Two What Is This');
 });
