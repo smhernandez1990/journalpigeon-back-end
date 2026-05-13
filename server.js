@@ -13,7 +13,9 @@ const verifyJwt = require('./middleware/verify-jwt')
 
 require('./db/connection')
 
-app.use(cors());
+app.use(cors({
+    origin:'https://journal-pigeon.netlify.app/'
+}));
 app.use(express.json());
 app.use(logger('dev'));
 
