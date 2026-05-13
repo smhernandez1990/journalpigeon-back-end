@@ -14,7 +14,12 @@ const corsConfig = require('./middleware/corsConfig')
 
 require('./db/connection')
 
-app.use(cors(corsConfig));
+const corsOptions = {
+    origin: 'https://journal-pigeon.netlify.app',
+    optionsSuccessStatus: 200
+}
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logger('dev'));
 
