@@ -20,7 +20,8 @@ router.post('/sign-in', async (req, res) => {
         )
         res.status(200).json({ token })
     } catch (error) {
-        res.status(500).json({error: error.message}).redirect('/error')
+      throw new Error ('Error: ', error.message)
+      res.status(500).redirect('/error')
         
     }
 })
@@ -48,7 +49,8 @@ router.post('/sign-up', async (req, res) => {
         );
         res.status(201).json({ token })
     } catch (error) {
-        res.status(500).json({err: error.message})
+      throw new Error('Error: ', error.message)
+      res.status(500).redirect('/error')
     }
 })
 

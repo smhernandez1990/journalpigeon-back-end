@@ -7,7 +7,8 @@ router.get('/', async (req, res) => {
         const users = await User.find({}, 'username')
         res.json(users)
     } catch (error) {
-        res.status(500).json({ error: error.message }).redirect('/error')
+        throw new Error('Error: ', error.message)
+        res.status(500).redirect('/error')
     }
 })
 
@@ -18,7 +19,8 @@ router.get('/me', verifyJwt, async (req, res) => {
         const user = await User.findById(req.user._id)
         res.status(200).json({ user })
     } catch (error) {
-        res.status(500).json({ error: error.message }).redirect('/error')
+        throw new Error('Error: ', error.message)
+        res.status(500).redirect('/error')
     }
 })
 

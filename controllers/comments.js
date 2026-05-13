@@ -69,7 +69,8 @@ router.delete("/:commentId", verifyJwt, async (req, res) => {
 
     res.status(401).json({ error: "Unauthorized" });
   } catch (error) {
-    res.status(500).json({ error: error.message }).redirect('/error')
+    throw new Error('Error: ', error.message)
+    res.status(500).redirect('/error')
   }
 });
 

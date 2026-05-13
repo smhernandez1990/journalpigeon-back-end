@@ -13,7 +13,8 @@ router.post('/', verifyJwt, async (req, res) => {
         post._doc.user_id = req.user
         res.status(201).json(post)
     } catch (error) {
-        res.status(500).json({error: error.message})
+      throw new Error('Error: ', error.message)
+      res.status(500).redirect('/error')
     }
 })
 
@@ -25,6 +26,7 @@ router.get('/', verifyJwt, async (req, res) => {
             .sort({ createdAt: 'desc' })
         res.status(200).json(posts)
     } catch (error) {
+      throw new Error('Error: ', error.message)
       res.status(500).redirect('/error')
     }
 })
@@ -41,6 +43,7 @@ router.get("/:postId", verifyJwt, async (req, res) => {
 
     res.status(200).json(post);
   } catch (error) {
+    throw new Error('Error: ', error.message)
     res.status(500).redirect('/error')
   }
 });
@@ -59,6 +62,7 @@ router.put("/:postId", verifyJwt, async (req, res) => {
 
     res.status(200).json(updatePost);
   } catch (error) {
+    throw new Error('Error: ', error.message)
     res.status(500).redirect('/error')
   }
 });
@@ -78,6 +82,7 @@ router.delete('/:postId', verifyJwt, async (req, res) => {
 
         res.status(204).send();
     } catch (error) {
+      throw new Error('Error: ', error.message)
       res.status(500).redirect('/error')
     }
 })
